@@ -4,26 +4,40 @@
 \alias{global_imputationDS}
 \title{Global imputation of missing data using MICE}
 \usage{
-global_imputationDS(df, id_col, m, maxit)
+global_imputationDS(
+  df,
+  id_col,
+  m = 5,
+  maxit = 30,
+  newobj = "global_imputation_result"
+)
 }
 \arguments{
-\item{df}{A data frame containing the variables to be imputed. Both numeric and
-categorical variables are supported.}
+\item{df}{A data frame containing the variables to be imputed.}
 
 \item{id_col}{A string specifying the name of the identifier column.
-This column is excluded from the imputation process and used to aggregate the
-results across multiple imputations.}
+Excluded from imputation and reattached afterwards.}
 
 \item{m}{Number of imputations to generate (passed to \code{mice}).}
 
 \item{maxit}{Maximum number of MICE iterations per imputation chain.}
+
+\item{newobj}{Name under which the imputed data frame is stored.}
 }
 \value{
-A data frame where missing values have been imputed using the MICE
+A list with \code{newobj}, \code{n_rows}, \code{n_cols}, and
+  \code{method_by_column} (named character vector of MICE methods used
+  per column -- method names only, never data).
 }
 \description{
-Perform a global imputation of missing values in a data frame using
-the Multiple Imputation by Chained Equations (MICE) algorithm. The function
-automatically identifies continuous and categorical variables, assigns appropriate
-imputation methods (pmm, logreg, polyreg), and returns a single imputed data frame.
+Performs a global (pooled, not patient-grouped) imputation
+  of missing values using Multiple Imputation by Chained Equations
+  (MICE): identifies continuous vs. categorical variables, base::assigns
+  appropriate methods (pmm, logreg, polyreg), and returns a single
+  averaged/modal-consensus imputed data frame. Disclosure-safe: the
+  imputed data frame is stored server-side via \code{base::assign(newobj, ...,
+  envir = parent.frame())} and never appears in this function's own
+  return value -- only a small summary (row/column counts and the
+  per-column imputation METHOD names, e.g. "pmm"/"logreg" -- never any
+  data value) is returned.
 }

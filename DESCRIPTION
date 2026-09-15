@@ -1,11 +1,59 @@
 Package: dsClinicalDataHarmonization
-Title: What the Package Does (One Line, Title Case)
-Version: 0.0.0.9000
+Title: dsClinicalDataHarmonization server side base functions 
+Version: 0.0.1
+Date: 2026-09-14
+Author: Arianna Fontanesi, Simone Avesani, Gospel Ozioma Nnadi
 Authors@R: 
-    person("First", "Last", , "first.last@example.com", role = c("aut", "cre"))
-Description: What the package does (one paragraph).
-License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
-    license
+    c(person(given = "Arianna",
+             family = "Fontanesi",
+             role = c("aut", "cre", "cph"),
+             email = "arianna.fontanesi@univr.it",
+             comment = c(ORCID = "X")),
+     person(given = "Simone",
+             family = "Avesani",
+             role = c("aut", "cre", "cph"),
+             email = "simone.avesani@univr.it",
+             comment = c(ORCID = "X")),
+     person(given = "Gospel Ozioma",
+             family = "Nnadi",
+             role = c("aut", "cre", "cph"),
+             email = "gospelozioma.nnadi@univr.it",
+             comment = c(ORCID = "X")),
+      person(given = "et",
+             family = "al",
+             role="ths",
+             email="mdrra-univr@univr.it"))
+Maintainer: Arianna Fontanesi <arianna.fontanesi@univr.it>
+Description: dsClinicalDataHarmonization - Federated MDRRA Clinical Data Harmonization and data cleaning on DataSHIELD.
+AggregateMethods:
+  cast_NADS,
+  cast_to_factorDS,
+  check_categoricalDS,
+  check_missing_dataDS,
+  check_numericDS,
+  check_patient_visitDS,
+  check_residual_naDS,
+  check_variablesDS,
+  clinical_variable_dictionaryDS,
+  compute_derived_variablesDS,
+  detect_type_mismatchesDS,
+  detect_zero_anomaliesDS,
+  drop_rows_missingDS,
+  dummy_encode_ordinalDS,
+  exploratory_analysisDS,
+  fill_missing_dataDS,
+  force_convert_typesDS,
+  global_imputationDS,
+  harmonization_diagnosisDS,
+  harmonization_summaryDS,
+  longitudinal_imputationDS,
+  post_imputation_cleanupDS,
+  remove_columnsDS,
+Options: datashield.privacyLevel=5
+Depends: R (>= 3.5)
 Encoding: UTF-8
-Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.3
+LazyData: true
+License: GPL-3
+SystemRequirements: GNU Fortran
+Config/roxygen2/version: 8.1.0
+RoxygenNote: 7.3.2

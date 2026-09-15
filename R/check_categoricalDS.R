@@ -24,8 +24,12 @@ check_categoricalDS <- function(df) {
     csDMARD1 = c(1, 2, 3, 4, 5, NA),
     csDMARD2 = c(1, 2, 3, 4, 5, NA),
     csDMARD3 = c(1, 2, 3, 4, 5, NA),
-    bDMARD = c(1, 2, 3, 4),
-    tsDMARD = c(1, 2, 3, 4),
+    # bDMARD: anti-TNF=1, anti-IL6=2, rituximab=3, abatacept=4, anti-IL1=5
+    # (previous version of this check only allowed 1-4, silently flagging
+    # every legitimate anti-IL1 record as invalid)
+    bDMARD = c(1, 2, 3, 4, 5, NA),
+    # tsDMARD: tofacitinib=1, baricitinib=2, upadacitinib=3, filgotinib=4
+    tsDMARD = c(1, 2, 3, 4, NA),
     D2T = c(0, 1, NA)
   )
 

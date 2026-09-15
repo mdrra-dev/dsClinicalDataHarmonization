@@ -34,6 +34,11 @@ check_numericDS <- function(df) {
     any(invalid)
   }
 
+  # NOTE ON month_diagnosis: the harmonization data dictionary specifies a
+  # valid range of "0 to 12" (rather than the calendar-conventional 1-12).
+  # That is followed literally here since it is the analyst-supplied
+  # specification; if a future version of the dictionary tightens this to
+  # 1-12, update min below accordingly.
   range_checks <- list(
     Visit_months_from_diagnosis = list(min = 0, decimals = 2),
     Age_diagnosis = list(min = 18, max = 110, integer = TRUE),
@@ -53,13 +58,22 @@ check_numericDS <- function(df) {
     eq5d = list(min = 0),
     HAQ = list(min = 0, max = 3),
     Year_diagnosis = list(min = 2010, integer = TRUE),
-    month_diagnosis = list(min = 1, max = 12, integer = TRUE),
+    month_diagnosis = list(min = 0, max = 12, integer = TRUE),
     Symptom_duration = list(min = 0, decimals = 1),
     Visit = list(min = 1, integer = TRUE),
+    D2T = list(min = 0, max = 1, integer = TRUE),
+    # ---- optional variables ----
     DAS28_CRP = list(min = 0, decimals = 2),
-    USGS = list(min = 0, integer = TRUE),
-    USPD = list(min = 0, integer = TRUE),
-    NUSI = list(min = 0, integer = TRUE)
+    USGS = list(min = 0),
+    USPD = list(min = 0),
+    NUSI = list(min = 0),
+    N_comorbidities = list(min = 0, integer = TRUE),
+    IP_score = list(min = 0, max = 4, integer = TRUE),
+    EP_score = list(min = 0, max = 4, integer = TRUE),
+    # ---- derived variables (computed by compute_derived_variablesDS(),
+    # still worth range-checking once present) ----
+    USPDGS = list(min = 0),
+    DAS2C = list(min = 0)
   )
 
   invalid_cols <- c()

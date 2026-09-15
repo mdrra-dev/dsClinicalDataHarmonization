@@ -1,18 +1,27 @@
-#' @title Remove specified columns from a data frame
-#' @description Remove one or more columns from a data frame based on their names.
+#' @title Remove specified columns
+#' @description Drops one or more named columns from a data frame.
+#'   Disclosure-safe: the resulting data frame is stored server-side via
+#'   \code{assign(newobj, ..., envir = parent.frame())} and never appears in
+#'   this function's own return value.
 #'
-#' @param df A data frame from which columns will be removed.
-#' @param col_names A character vector specifying the names of the columns to be removed.
+#' @param df A data frame.
+#' @param col_names A character vector (or "$"-joined string) of column
+#'   names to remove.
+#' @param newobj Name under which the resulting data frame is stored.
 #'
-#' @return The input data frame with the specified columns removed.
+#' @return A list with \code{newobj}, \code{columns_removed} (subset of the
+#'   requested columns that were actually present), \code{n_cols_before},
+#'   and \code{n_cols_after}.
 #' @export
-#'
+remove_columnsDS <- function(df, col_names, newobj = "remove_columns_result") {
 
-remove_columnsDS <- function(df, col_names) {
+  columns <- intersect(cdh_split_cols(col_names), names(df))
+  n_cols_before <- ncol(df)
 
-  columns <- strsplit(col_names, "$", fixed = TRUE)[[1]]
+  df_clean <- df[, !(names(df) %in% columns), drop = FALSE]
 
-  df_clean <- df[ , !(names(df) %in% columns)]
+  assign(newobj, df_clean, envir = parent.frame())
 
-  return(df_clean)
+  list(newobj = newobj, columns_removed = columns,
+       n_cols_before = n_cols_before, n_cols_after = ncol(df_clean))
 }

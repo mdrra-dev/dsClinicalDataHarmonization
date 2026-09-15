@@ -1,41 +1,34 @@
-#' @title Cast "NA" string into type NA
-#' @description Convert "NA" strings of a data frame to proper NA values and report whether any replacement occurred.
+#' @title Cast "NA" strings into type NA
+#' @description Converts "NA" strings of a data frame to proper NA values.
+#'   Follows the package's disclosure-safe pattern: the transformed data
+#'   frame is stored server-side via \code{base::assign(newobj, ..., envir =
+#'   parent.frame())} and is NEVER part of this function's own return value
+#'   -- so even if this function were ever invoked as an aggregate call by
+#'   mistake, no row-level data crosses the wire. Only a small non-disclosive
+#'   summary (whether any replacement occurred) is returned.
 #'
 #' @param df A data frame containing values to be converted.
+#' @param newobj Name under which the converted data frame is stored on the
+#'   server (in the calling environment, i.e. the analytic session).
 #'
-#' @return A list containing:
-#' \itemize{
-#'   \item data: the input data frame with "NA" strings converted to NA
-#'   \item flag: logical indicating whether any replacement was performed
-#' }
+#' @return A list with \code{newobj} (the name just base::assigned) and
+#'   \code{changed} (logical, whether any "NA" string was replaced).
 #' @export
-
-cast_NADS <- function(df){
+cast_NADS <- function(df, newobj = "cast_NA_result") {
 
   changed <- FALSE
   df[] <- lapply(df, function(x) {
     if (is.character(x)) {
-      if (any(x == "NA", na.rm = TRUE)) {
+      if (any(x == "NA", na.rm = TRUE) || any(x == "", na.rm = TRUE)) {
         changed <<- TRUE
       }
       x[x == "NA"] <- NA
+      x[x == ""] <- NA
     }
     x
   })
 
-  return(list(
-    data = df,
-    flag = changed
-  ))
-}
+  base::assign(newobj, df, envir = parent.frame())
 
-#' @title Check if NA string replacement occurred
-#' @description Returns whether the cast_NA operation modified the dataset.
-#'
-#' @param x A DataSHIELD object returned by cast_NADS.
-#'
-#' @return Logical value indicating if any "NA" strings were replaced.
-#' @export
-get_cast_NA_changedDS <- function(x) {
-  x$flag
+  list(newobj = newobj, changed = changed)
 }
