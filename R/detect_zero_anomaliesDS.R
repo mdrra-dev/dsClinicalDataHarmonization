@@ -50,33 +50,116 @@
 detect_zero_anomaliesDS <- function(df, cols = NULL, zero_prop_threshold = 0.3,
                                      spike_ratio_threshold = 3, num_bins = 10,
                                      nfilter = 5) {
+  df <- eval(parse(text = df), envir = parent.frame())
+  .cdh_detect_zero_anomalies_core(df, cols = cols, zero_prop_threshold = zero_prop_threshold,
+                                   spike_ratio_threshold = spike_ratio_threshold,
+                                   num_bins = num_bins, nfilter = nfilter)
+}
 
-  candidate_cols <- if (is.null(cols)) {
-    names(df)[sapply(df, is.numeric)]
-  } else {
-    intersect(cdh_split_cols(cols), names(df))
+#' @title Detect suspicious zero-inflation in numeric columns (core logic)
+#' @description Internal core, called both by the registered DS method above
+#'   (after it resolves \code{df} from its name) and directly by
+#'   \code{harmonization_diagnosisDS} (which already has \code{df} in hand).
+#' @export
+.cdh_detect_zero_anomalies_core <- function(
+  df,
+  cols = NULL,
+  zero_prop_threshold = 0.3,
+  spike_ratio_threshold = 3,
+  num_bins = 10,
+  nfilter = 5
+) {
+
+  # ---- Defensive validation ----
+  if (length(nfilter) != 1L || is.na(nfilter)) {
+    stop("nfilter must be a single non-missing numeric value")
   }
 
+  if (length(num_bins) != 1L || is.na(num_bins) || num_bins < 1) {
+    stop("num_bins must be a single positive numeric value")
+  }
+
+  if (length(zero_prop_threshold) != 1L ||
+      is.na(zero_prop_threshold)) {
+    stop("zero_prop_threshold must be a single non-missing numeric value")
+  }
+
+  if (length(spike_ratio_threshold) != 1L ||
+      is.na(spike_ratio_threshold)) {
+    stop("spike_ratio_threshold must be a single non-missing numeric value")
+  }
+
+  # ---- Candidate numeric columns ----
+  if (is.null(cols)) {
+    candidate_cols <- names(df)[vapply(df, is.numeric, logical(1))]
+  } else {
+    candidate_cols <- intersect(cdh_split_cols(cols), names(df))
+  }
+
+  # ---- Analyse each candidate ----
   out <- lapply(candidate_cols, function(cn) {
+
     x <- df[[cn]]
-    x <- x[!is.na(x)]
+
+    if (!is.numeric(x)) {
+      return(NULL)
+    }
+
+    x <- x[is.finite(x)]
+
     n_nonmissing <- length(x)
-    if (n_nonmissing < nfilter) return(NULL)
+
+    if (n_nonmissing < nfilter) {
+      return(NULL)
+    }
 
     n_zero <- sum(x == 0)
     prop_zero <- n_zero / n_nonmissing
 
     nonzero <- x[x != 0]
+
     spike_ratio <- NA_real_
-    if (length(nonzero) >= 2 && diff(range(nonzero)) > 0) {
-      breaks <- seq(min(nonzero), max(nonzero), length.out = num_bins + 1)
-      bin_counts <- table(cut(nonzero, breaks = breaks, include.lowest = TRUE))
-      avg_bin_count <- mean(bin_counts)
-      spike_ratio <- if (avg_bin_count > 0) n_zero / avg_bin_count else NA_real_
+
+    if (length(nonzero) >= 2L) {
+
+      nonzero_range <- range(nonzero)
+
+      if (all(is.finite(nonzero_range)) &&
+          diff(nonzero_range) > 0) {
+
+        breaks <- seq(
+          from = nonzero_range[1],
+          to   = nonzero_range[2],
+          length.out = as.integer(num_bins) + 1L
+        )
+
+        bin_counts <- table(
+          cut(
+            nonzero,
+            breaks = breaks,
+            include.lowest = TRUE
+          )
+        )
+
+        avg_bin_count <- mean(bin_counts)
+
+        if (length(avg_bin_count) == 1L &&
+            is.finite(avg_bin_count) &&
+            avg_bin_count > 0) {
+
+          spike_ratio <- n_zero / avg_bin_count
+        }
+      }
     }
 
-    prop_flag  <- prop_zero >= zero_prop_threshold
-    spike_flag <- !is.na(spike_ratio) && spike_ratio >= spike_ratio_threshold
+    prop_flag <- isTRUE(
+      prop_zero >= zero_prop_threshold
+    )
+
+    spike_flag <- isTRUE(
+      !is.na(spike_ratio) &&
+      spike_ratio >= spike_ratio_threshold
+    )
 
     list(
       n_nonmissing = n_nonmissing,
@@ -85,9 +168,55 @@ detect_zero_anomaliesDS <- function(df, cols = NULL, zero_prop_threshold = 0.3,
       spike_ratio = spike_ratio,
       prop_flag = prop_flag,
       spike_flag = spike_flag,
-      flagged = isTRUE(prop_flag) || isTRUE(spike_flag)
+      flagged = prop_flag || spike_flag
     )
   })
+
   names(out) <- candidate_cols
+
   Filter(Negate(is.null), out)
 }
+# .cdh_detect_zero_anomalies_core <- function(df, cols = NULL, zero_prop_threshold = 0.3,
+#                                              spike_ratio_threshold = 3, num_bins = 10,
+#                                              nfilter = 5) {
+
+#   candidate_cols <- if (is.null(cols)) {
+#     names(df)[sapply(df, is.numeric)]
+#   } else {
+#     intersect(cdh_split_cols(cols), names(df))
+#   }
+
+#   out <- lapply(candidate_cols, function(cn) {
+#     x <- df[[cn]]
+#     x <- x[!is.na(x)]
+#     n_nonmissing <- length(x)
+#     if (n_nonmissing < nfilter) return(NULL)
+
+#     n_zero <- sum(x == 0)
+#     prop_zero <- n_zero / n_nonmissing
+
+#     nonzero <- x[x != 0]
+#     spike_ratio <- NA_real_
+#     if (length(nonzero) >= 2 && diff(range(nonzero)) > 0) {
+#       breaks <- seq(min(nonzero), max(nonzero), length.out = num_bins + 1)
+#       bin_counts <- table(cut(nonzero, breaks = breaks, include.lowest = TRUE))
+#       avg_bin_count <- mean(bin_counts)
+#       spike_ratio <- if (avg_bin_count > 0) n_zero / avg_bin_count else NA_real_
+#     }
+
+#     prop_flag  <- prop_zero >= zero_prop_threshold
+#     spike_flag <- !is.na(spike_ratio) && spike_ratio >= spike_ratio_threshold
+
+#     list(
+#       n_nonmissing = n_nonmissing,
+#       n_zero = n_zero,
+#       prop_zero = prop_zero,
+#       spike_ratio = spike_ratio,
+#       prop_flag = prop_flag,
+#       spike_flag = spike_flag,
+#       flagged = isTRUE(prop_flag) || isTRUE(spike_flag)
+#     )
+#   })
+#   names(out) <- candidate_cols
+#   Filter(Negate(is.null), out)
+# }

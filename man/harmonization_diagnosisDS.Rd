@@ -9,7 +9,7 @@ harmonization_diagnosisDS(
   required_vars,
   optional_vars,
   pat_id_col = "pat_ID",
-  visit_col = "Visit",
+  visit_col = "Visit_months_from_diagnosis",
   nfilter = 5,
   zero_prop_threshold = 0.3,
   spike_ratio_threshold = 3

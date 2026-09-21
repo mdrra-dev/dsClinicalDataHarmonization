@@ -4,26 +4,18 @@
 \alias{drop_rows_missingDS}
 \title{Drop rows with missing values in specified columns}
 \usage{
-drop_rows_missingDS(df, col_names, newobj = "drop_rows_missing_result")
+drop_rows_missingDS(df, col_names, newobj)
 }
 \arguments{
-\item{df}{A data frame.}
+\item{df}{A data frame (already resolved).}
 
-\item{col_names}{A character vector (or "$"-joined string) of column
-names to check for missingness.}
+\item{col_names}{A character vector (or "$"-joined string) of columns to check.}
 
-\item{newobj}{Name under which the resulting data frame is stored.}
+\item{newobj}{Name under which the result is stored.}
 }
 \value{
-A list with \code{newobj}, \code{n_before}, \code{n_after},
-  \code{n_removed}.
+\code{list(newobj=, n_before=, n_after=, n_removed=)}.
 }
 \description{
-Companion to \code{remove_columnsDS} for the missing-data
-  workflow: instead of dropping a variable that exceeds the missingness
-  threshold, this drops the ROWS that are missing on that variable,
-  keeping the variable itself. Disclosure-safe: the resulting data frame
-  is stored server-side via \code{base::assign(newobj, ..., envir =
-  parent.frame())} and never appears in this function's own return value
-  -- only row counts (aggregate, non-disclosive) are returned.
+Drop rows with missing values in specified columns
 }

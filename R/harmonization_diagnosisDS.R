@@ -37,15 +37,20 @@
 #' @export
 harmonization_diagnosisDS <- function(df, required_vars, optional_vars,
                                        pat_id_col = "pat_ID",
-                                       visit_col = "Visit",
+                                       visit_col = "Visit_months_from_diagnosis",
                                        nfilter = 5,
                                        zero_prop_threshold = 0.3,
                                        spike_ratio_threshold = 3) {
 
+
   n <- nrow(df)
   if (n < nfilter) stop("site n below disclosure threshold")
 
-  var_check <- check_variablesDS(
+  # NOTE: the sub-checks below call the internal ".core" versions directly
+  # with the already-resolved `df` object, NOT the registered check_*DS
+  # wrappers -- those wrappers expect a session object NAME (a string) to
+  # eval() themselves, which `df` no longer is at this point.
+  var_check <- .cdh_check_variables_core(
     df,
     variables_string = paste(cdh_split_cols(required_vars), collapse = "$"),
     optional_string  = paste(cdh_split_cols(optional_vars), collapse = "$")
@@ -55,17 +60,17 @@ harmonization_diagnosisDS <- function(df, required_vars, optional_vars,
     is.character(x) && any(x == "NA", na.rm = TRUE)
   }, logical(1)))
 
-  invalid_numeric     <- check_numericDS(df)
-  invalid_categorical <- check_categoricalDS(df)
-  missing_pct         <- check_missing_dataDS(df)
+  invalid_numeric     <- .cdh_check_numeric_core(df)
+  invalid_categorical <- .cdh_check_categorical_core(df)
+  missing_pct         <- .cdh_check_missing_data_core(df)
 
   dup_count <- NA_integer_
   if (pat_id_col %in% names(df) && visit_col %in% names(df)) {
-    pv <- check_patient_visitDS(df, pat_id_col = pat_id_col, visit_col = visit_col)
+    pv <- .cdh_check_patient_visit_core(df, pat_id_col = pat_id_col, visit_col = visit_col)
     dup_count <- pv$n_duplicate_pairs
   }
 
-  zero_anomalies <- detect_zero_anomaliesDS(
+  zero_anomalies <- .cdh_detect_zero_anomalies_core(
     df, cols = NULL,
     zero_prop_threshold = zero_prop_threshold,
     spike_ratio_threshold = spike_ratio_threshold,

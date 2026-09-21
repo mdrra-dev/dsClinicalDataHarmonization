@@ -7,31 +7,20 @@
 check_variablesDS(df, variables_string, optional_string = "")
 }
 \arguments{
-\item{df}{A data frame to be checked.}
+\item{df}{A data frame (already resolved -- DataSHIELD's aggregate dispatch
+passes session objects directly, no manual resolution needed).}
 
 \item{variables_string}{A single character string specifying the required
 variable names separated by "$".}
 
 \item{optional_string}{A single character string specifying optional
-variable names separated by "$". Defaults to "" (no optional variables
-declared, i.e. legacy behaviour).}
+variable names separated by "$". Defaults to "".}
 }
 \value{
-A named list with three elements:
-  \itemize{
-    \item \code{missing}: required variables not found in the data frame.
-    \item \code{optional_present}: declared optional variables that ARE
-      present in the data frame (informational only, never a failure).
-    \item \code{extra}: variables found in the data frame that are neither
-      required nor declared optional.
-  }
+A named list with \code{missing}, \code{optional_present}, \code{extra}.
 }
 \description{
 Verify that a data frame contains every variable in a
-  \code{required} set, report which \code{optional} variables (checked for
-  type/range only if present -- see \code{check_numericDS()} /
-  \code{check_categoricalDS()}) are actually present, and flag anything
-  else in the data frame as unexpected ("extra"). Backward compatible with
-  the original single-list behaviour: if \code{optional_string} is empty,
-  this reduces to the original "everything not required is extra" check.
+  \code{required} set, report which \code{optional} variables are
+  actually present, and flag anything else as unexpected ("extra").
 }

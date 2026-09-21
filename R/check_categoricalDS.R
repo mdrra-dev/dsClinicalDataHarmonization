@@ -1,45 +1,42 @@
-#' @title Check validity of categorical variables
-#' @description Verify that selected categorical variables in a data frame
-#'   contain only predefined valid values.
-#'
-#' @param df A data frame containing the categorical variables to be checked.
-#'
-#' @return A character vector with the names of columns containing invalid values.
-#'   Returns an empty character vector if all checked variables are valid.
+#' @title Value-set checks for categorical clinical variables (core logic)
 #' @export
-
-check_categoricalDS <- function(df) {
-
-  normalize_missing <- function(x) {
-    x[x == "" & !is.na(x)] <- NA
-    x
-  }
+.cdh_check_categorical_core <- function(df) {
+  invalid_cols <- character(0)
 
   valid_values <- list(
     Sex = c(0, 1, NA),
     RF_positivity = c(0, 1, NA),
     anti_CCP = c(0, 1, NA),
-    GC = c(1, NA),
-    GC_type = c(1, 2, 3, 4, NA),
     csDMARD1 = c(1, 2, 3, 4, 5, NA),
     csDMARD2 = c(1, 2, 3, 4, 5, NA),
     csDMARD3 = c(1, 2, 3, 4, 5, NA),
     # bDMARD: anti-TNF=1, anti-IL6=2, rituximab=3, abatacept=4, anti-IL1=5
-    # (previous version of this check only allowed 1-4, silently flagging
-    # every legitimate anti-IL1 record as invalid)
     bDMARD = c(1, 2, 3, 4, 5, NA),
     # tsDMARD: tofacitinib=1, baricitinib=2, upadacitinib=3, filgotinib=4
     tsDMARD = c(1, 2, 3, 4, NA),
-    D2T = c(0, 1, NA)
+    D2T = c(0, 1, NA),
+    GC = c(1, NA),
+    GC_type = c(1, 2, 3, 4, NA)
   )
 
-  invalid_cols <- c()
-  for (col_name in names(valid_values)) {
-    if (col_name %in% names(df)) {
-      x <- normalize_missing(df[[col_name]])
-      has_invalid <- any(!x %in% valid_values[[col_name]])
-      if (has_invalid) invalid_cols <- c(invalid_cols, col_name)
-    }
+  for (cn in names(valid_values)) {
+    if (!cn %in% names(df)) next
+    x <- suppressWarnings(as.numeric(as.character(df[[cn]])))
+    x <- x[!is.na(x)]
+    if (length(x) == 0) next
+    allowed <- valid_values[[cn]][!is.na(valid_values[[cn]])]
+    if (!all(x %in% allowed)) invalid_cols <- c(invalid_cols, cn)
   }
-  return(invalid_cols)
+
+  invalid_cols
+}
+
+#' @title Value-set checks for categorical clinical variables
+#' @param df A character string giving the name of the server-side data
+#'   frame to check.
+#' @return Character vector of column names with values outside their
+#'   permitted set.
+#' @export
+check_categoricalDS <- function(df) {
+  .cdh_check_categorical_core(df)
 }

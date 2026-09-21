@@ -12,7 +12,7 @@ longitudinal_imputationDS(
   m = 5,
   maxit = 30,
   nfilter = 5,
-  newobj = "longitudinal_imputation_result"
+  newobj
 )
 }
 \arguments{
@@ -33,17 +33,9 @@ identifiers). \code{pat_id_col} is always excluded automatically.}
 \item{maxit}{Maximum MICE iterations per chain.}
 
 \item{nfilter}{Minimum site row count required to proceed at all.}
-
-\item{newobj}{Name under which the resulting data frame is stored.}
 }
 \value{
-Disclosure-safe: the imputed data frame (one row per patient,
-  visit; numeric columns imputed and averaged across the \code{m} draws;
-  non-numeric columns taken from the modal imputed value) is stored
-  server-side via \code{base::assign(newobj, ..., envir = parent.frame())} and
-  never appears in this function's own return value. Returns a list with
-  \code{newobj}, \code{n_rows}, \code{n_patients}, and
-  \code{n_patients_unimputed} (patients with <2 visits, left as-is).
+\code{list(newobj=, n_rows=, n_patients=, n_patients_unimputed=)}.
 }
 \description{
 The preferred imputation method for this harmonization

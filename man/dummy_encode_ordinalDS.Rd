@@ -4,33 +4,21 @@
 \alias{dummy_encode_ordinalDS}
 \title{Dummy-encode ordinal/nominal-coded variables}
 \usage{
-dummy_encode_ordinalDS(df, columns, newobj = "dummy_encode_ordinal_result")
+dummy_encode_ordinalDS(df, columns, newobj)
 }
 \arguments{
-\item{df}{A data frame.}
+\item{df}{A data frame (already resolved).}
 
-\item{columns}{A character vector (or "$"-joined string) of columns to
-dummy-encode.}
+\item{columns}{A character vector (or "$"-joined string) of columns.}
 
-\item{newobj}{Name under which the resulting data frame is stored.}
+\item{newobj}{Name under which the result is stored.}
 }
 \value{
-A list with \code{newobj}, \code{added} (new dummy column names),
-  and \code{skipped_excluded} (requested columns skipped because they're
-  on the excluded list).
+\code{list(newobj=, added=, skipped_excluded=)}.
 }
 \description{
-For each named column, coerces it to integer (keeping the
-  ORIGINAL column, unlike \code{cast_to_factorDS} which replaces it) and
-  adds one integer 0/1 dummy column per observed level, named
-  \code{"<column>_<level>"}. Rows with \code{NA} in the source column get
-  \code{NA} in every dummy for that column.
-
-  \code{IP_score} and \code{EP_score} are explicitly excluded even if
-  passed in \code{columns} -- these are patient-annotation severity scores
-  (0-4), not treatment-class categories.
-
-  Disclosure-safe: the result is stored server-side via
-  \code{base::assign(newobj, ..., envir = parent.frame())} and never appears in
-  this function's own return value -- only column NAMES are returned.
+Original column becomes a FACTOR (excluded from numeric
+  analysis, picked up by categorical checks); one integer 0/1 dummy per
+  observed level is added, named \code{"<column>_<level>"}. \code{IP_score}
+  and \code{EP_score} are always excluded.
 }

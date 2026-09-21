@@ -1,39 +1,36 @@
 #' @title Compute derived clinical variables
-#' @description Derives two composite variables when their source columns are
-#'   available, and leaves the data frame otherwise untouched -- some sites
-#'   may not collect ultrasound data at all, and this should not block the
-#'   rest of the harmonization pipeline.
+#' @description Computed only when source columns are available (missing
+#'   sources = skipped, not an error):
 #'   \itemize{
-#'     \item \code{USPDGS = USPD + USGS}, computed only if both \code{USPD}
-#'       and \code{USGS} are present.
-#'     \item \code{DAS2C = sqrt(SJC28) + 0.6 * log1p(CRP)}, computed only if
-#'       both \code{SJC28} and \code{CRP} are present.
+#'     \item \code{USPDGS = USPD + USGS}
+#'     \item \code{DAS2C = sqrt(SJC28) + 0.6 * log(CRP + 1)}
+#'     \item \code{CDAI50 = SJC28 + TJC28 + Pain/10 + Ph_global/10}
+#'     \item \code{SDAI = CRP + CDAI50} (requires CDAI50 to have been computed)
 #'   }
-#'   Row-wise: if either input is \code{NA} for a given row, the derived
-#'   value for that row is \code{NA} too. Disclosure-safe: the result is
-#'   stored server-side via \code{base::assign(newobj, ..., envir = parent.frame())}
-#'   and never appears in this function's own return value.
-#'
-#' @param df A data frame.
-#' @param newobj Name under which the resulting data frame is stored.
-#' @return A list with \code{newobj} and \code{computed} (character vector of
-#'   which derived columns were actually added -- column NAMES only).
+#' @param df A data frame (already resolved).
+#' @param newobj Name under which the result is stored.
+#' @return \code{list(newobj=, computed=)}.
 #' @export
-compute_derived_variablesDS <- function(df, newobj = "compute_derived_variables_result") {
-
+compute_derived_variablesDS <- function(df, newobj) {
   computed <- c()
 
   if (all(c("USPD", "USGS") %in% names(df))) {
     df$USPDGS <- df$USPD + df$USGS
     computed <- c(computed, "USPDGS")
   }
-
   if (all(c("SJC28", "CRP") %in% names(df))) {
-    df$DAS2C <- sqrt(df$SJC28) + 0.6 * log1p(df$CRP)
+    df$DAS2C <- sqrt(df$SJC28) + 0.6 * log(df$CRP + 1)
     computed <- c(computed, "DAS2C")
+  }
+  if (all(c("SJC28", "TJC28", "Pain", "Ph_global") %in% names(df))) {
+    df$CDAI50 <- df$SJC28 + df$TJC28 + df$Pain / 10 + df$Ph_global / 10
+    computed <- c(computed, "CDAI50")
+  }
+  if (all(c("CRP", "CDAI50") %in% names(df))) {
+    df$SDAI <- df$CRP + df$CDAI50
+    computed <- c(computed, "SDAI")
   }
 
   base::assign(newobj, df, envir = parent.frame())
-
   list(newobj = newobj, computed = computed)
 }

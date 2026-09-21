@@ -4,7 +4,7 @@
 \alias{harmonization_summaryDS}
 \title{Non-disclosive harmonization summary}
 \usage{
-harmonization_summaryDS(df, nfilter = 5)
+harmonization_summaryDS(df, nfilter = 5, max_categories_shown = 20)
 }
 \arguments{
 \item{df}{A data frame.}
@@ -13,6 +13,10 @@ harmonization_summaryDS(df, nfilter = 5)
 a numeric summary or a categorical cell count is released. Categorical
 cells below this count are reported as \code{NA} (suppressed), same
 convention as other DataSHIELD packages (e.g. \code{ds.table}).}
+
+\item{max_categories_shown}{Distinct-value threshold above which a
+categorical column's full label:count breakdown is replaced with
+extremes only (no labels) -- see \code{cdh_categorical_summary}. Default 20.}
 }
 \value{
 A list:
@@ -23,8 +27,8 @@ A list:
       with \code{n, mean, sd, min, q25, median, q75, max} (entry omitted
       entirely if non-missing n < nfilter).
     \item \code{categorical_summary}: named list, one entry per
-      non-numeric column, itself a named list of category -> count
-      (counts below nfilter replaced with NA).
+      non-numeric column -- see \code{cdh_categorical_summary} for the
+      \code{"full"} vs. \code{"extremes"} shape.
   }
 }
 \description{

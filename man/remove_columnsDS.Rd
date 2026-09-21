@@ -4,24 +4,18 @@
 \alias{remove_columnsDS}
 \title{Remove specified columns}
 \usage{
-remove_columnsDS(df, col_names, newobj = "remove_columns_result")
+remove_columnsDS(df, col_names, newobj)
 }
 \arguments{
-\item{df}{A data frame.}
+\item{df}{A data frame (already resolved).}
 
-\item{col_names}{A character vector (or "$"-joined string) of column
-names to remove.}
+\item{col_names}{A character vector (or "$"-joined string) of columns to remove.}
 
-\item{newobj}{Name under which the resulting data frame is stored.}
+\item{newobj}{Name under which the result is stored.}
 }
 \value{
-A list with \code{newobj}, \code{columns_removed} (subset of the
-  requested columns that were actually present), \code{n_cols_before},
-  and \code{n_cols_after}.
+\code{list(newobj=, columns_removed=, n_cols_before=, n_cols_after=)}.
 }
 \description{
-Drops one or more named columns from a data frame.
-  Disclosure-safe: the resulting data frame is stored server-side via
-  \code{assign(newobj, ..., envir = parent.frame())} and never appears in
-  this function's own return value.
+Remove specified columns
 }

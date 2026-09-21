@@ -8,36 +8,24 @@ force_convert_typesDS(
   df,
   numeric_cols = NULL,
   categorical_cols = NULL,
-  newobj = "force_convert_types_result",
+  newobj,
   zero_prop_threshold = 0.3,
   spike_ratio_threshold = 3
 )
 }
 \arguments{
-\item{df}{A data frame.}
+\item{df}{A data frame (already resolved).}
 
-\item{numeric_cols}{Character vector (or "$"-joined string) of columns to
-force to numeric.}
+\item{numeric_cols, categorical_cols}{Character vectors (or "$"-joined strings).}
 
-\item{categorical_cols}{Character vector (or "$"-joined string) of columns
-to force to factor.}
+\item{newobj}{Name under which the result is stored.}
 
-\item{newobj}{Name under which the resulting data frame is stored.}
-
-\item{zero_prop_threshold, spike_ratio_threshold}{Passed through to
-\code{detect_zero_anomaliesDS} for the automatic post-conversion check
-on \code{numeric_cols}.}
+\item{zero_prop_threshold, spike_ratio_threshold}{Passed to \code{detect_zero_anomaliesDS}
+for the automatic post-conversion check on \code{numeric_cols}.}
 }
 \value{
-A list with \code{newobj}, \code{numeric_converted},
-  \code{categorical_converted}, and \code{zero_anomalies} (diagnostics for
-  the newly-converted numeric columns; empty list if none were converted).
+\code{list(newobj=, numeric_converted=, categorical_converted=, zero_anomalies=)}.
 }
 \description{
-Coerces the named columns to numeric and/or factor.
-  Disclosure-safe: the result is stored server-side via
-  \code{base::assign(newobj, ..., envir = parent.frame())} and never appears in
-  this function's own return value -- only column names and, for the
-  numeric columns just converted, non-disclosive zero-anomaly diagnostics
-  (see \code{detect_zero_anomaliesDS}) are returned.
+Force type conversion on selected columns
 }

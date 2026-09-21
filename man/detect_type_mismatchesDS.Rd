@@ -2,27 +2,18 @@
 % Please edit documentation in R/force_convert_typesDS.R
 \name{detect_type_mismatchesDS}
 \alias{detect_type_mismatchesDS}
-\title{Detect columns whose stored type doesn't match the expected type}
+\title{Detect columns whose stored type doesn't match the expected type (dry run)}
 \usage{
 detect_type_mismatchesDS(df, numeric_cols = NULL, categorical_cols = NULL)
 }
 \arguments{
-\item{df}{A data frame.}
+\item{df}{A data frame (already resolved).}
 
-\item{numeric_cols}{Character vector (or "$"-joined string) of columns
-expected to be numeric.}
-
-\item{categorical_cols}{Character vector (or "$"-joined string) of columns
-expected to be a factor.}
+\item{numeric_cols, categorical_cols}{Character vectors (or "$"-joined strings).}
 }
 \value{
-A list with \code{numeric_would_change} and
-  \code{categorical_would_change}.
+\code{list(numeric_would_change=, categorical_would_change=)}.
 }
 \description{
-Dry-run companion to \code{force_convert_typesDS} -- reports
-  which columns WOULD change type if conversion were forced, without
-  actually modifying anything. Never touches or returns any data value,
-  only column names, so this one is safe as a plain aggregate return
-  already (no server-side object is created).
+Detect columns whose stored type doesn't match the expected type (dry run)
 }

@@ -7,16 +7,11 @@
 check_residual_naDS(df)
 }
 \arguments{
-\item{df}{A data frame.}
+\item{df}{A data frame (already resolved).}
 }
 \value{
-A named numeric vector of remaining NA counts per column (only
-  columns with at least one remaining NA are included).
+Named numeric vector of remaining NA counts (only columns with >0).
 }
 \description{
-Lets the analyst inspect residual missingness after
-  imputation before deciding whether to call
-  \code{post_imputation_cleanupDS}. Never creates a server-side object,
-  so this one is already a plain, disclosure-safe aggregate function --
-  only per-column counts are returned, no row-level data.
+Count remaining NAs per column, without dropping anything
 }

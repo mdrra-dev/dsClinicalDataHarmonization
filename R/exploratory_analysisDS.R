@@ -25,6 +25,9 @@
 #'   longitudinal trend plot. \code{NULL} (default): skipped.
 #' @param num_bins Number of bins for the numeric histograms. Default 20.
 #' @param nfilter Minimum count required before any statistic/cell/bin is released.
+#' @param max_categories_shown Distinct-value threshold above which a
+#'   categorical column's full label:count breakdown is replaced with
+#'   extremes only (no labels) -- see \code{cdh_categorical_summary}. Default 20.
 #'
 #' @return A list:
 #'   \itemize{
@@ -35,8 +38,10 @@
 #'       column with \code{breaks} (bin edges) and \code{counts} (per-bin
 #'       counts, \code{NA} where a bin's count is below \code{nfilter}).
 #'     \item \code{categorical_summary}: named list, one entry per
-#'       categorical column, itself a named list of category -> count
-#'       (counts below \code{nfilter} replaced with \code{NA}).
+#'       categorical column -- see \code{cdh_categorical_summary} for the
+#'       \code{"full"} (small, bounded category sets) vs. \code{"extremes"}
+#'       (high-cardinality/free-text-like columns, no labels ever returned)
+#'       shape.
 #'     \item \code{correlation}: \code{list(cols=, matrix=)}, a Pearson
 #'       correlation matrix over numeric columns with pairwise-complete
 #'       observations, cells set to \code{NA} where the pairwise complete
@@ -49,8 +54,9 @@
 #'   }
 #' @export
 exploratory_analysisDS <- function(df, numeric_cols = NULL, categorical_cols = NULL,
-                                    group_col = NULL, num_bins = 20) {
-  nfilter = 5                                    
+                                    group_col = NULL, num_bins = 20, nfilter = 5,
+                                    max_categories_shown = 20) {
+
   n <- nrow(df)
   if (n < nfilter) stop("site n below disclosure threshold")
 
@@ -70,7 +76,6 @@ exploratory_analysisDS <- function(df, numeric_cols = NULL, categorical_cols = N
   numeric_summary <- Filter(Negate(is.null), numeric_summary)
 
   # ---- numeric histograms (binned counts only) -----------------------------
-  if (num_bin > nfilter){
   numeric_histograms <- lapply(names(numeric_summary), function(cn) {
     x <- df[[cn]]; x <- x[!is.na(x)]
     rng <- range(x)
@@ -81,19 +86,12 @@ exploratory_analysisDS <- function(df, numeric_cols = NULL, categorical_cols = N
     list(breaks = breaks, counts = counts)
   })
   names(numeric_histograms) <- names(numeric_summary)
-  }else {
-  stop(
-    "`num_bin` must be greater than `nfilter` to generate numeric histograms. ",
-    "Please provide a larger number of bins (currently `num_bin = ", num_bin,
-    "`, while `nfilter = ", nfilter, ")."
-  )
-  numeric_histograms <- NULL
-}
-  # ---- categorical frequencies ---------------------------------------------
+
+  # ---- categorical frequencies (full breakdown only for bounded category
+  # sets; high-cardinality/free-text-like columns get extremes only, no
+  # labels -- see cdh_categorical_summary) --------------------------------
   categorical_summary <- lapply(categorical_cols, function(cn) {
-    tab <- table(df[[cn]], useNA = "no")
-    tab[tab < nfilter] <- NA
-    as.list(tab)
+    cdh_categorical_summary(df[[cn]], nfilter = nfilter, max_categories_shown = max_categories_shown)
   })
   names(categorical_summary) <- categorical_cols
 

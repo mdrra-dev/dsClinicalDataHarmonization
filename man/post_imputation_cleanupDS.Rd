@@ -2,25 +2,18 @@
 % Please edit documentation in R/post_imputation_cleanupDS.R
 \name{post_imputation_cleanupDS}
 \alias{post_imputation_cleanupDS}
-\title{Drop rows that are still incomplete after imputation}
+\title{Drop rows still incomplete after imputation}
 \usage{
-post_imputation_cleanupDS(df, newobj = "post_imputation_cleanup_result")
+post_imputation_cleanupDS(df, newobj)
 }
 \arguments{
-\item{df}{A data frame (typically the output of an imputation step).}
+\item{df}{A data frame (already resolved).}
 
-\item{newobj}{Name under which the resulting data frame is stored.}
+\item{newobj}{Name under which the result is stored.}
 }
 \value{
-A list with \code{newobj}, \code{n_before}, \code{n_after},
-  \code{n_removed}.
+\code{list(newobj=, n_before=, n_after=, n_removed=)}.
 }
 \description{
-Imputation can legitimately leave some rows with residual
-  \code{NA}s. This function lets the analyst explicitly drop them after
-  seeing how many rows are affected (via \code{check_residual_naDS}); it
-  never happens implicitly inside the imputation step itself.
-  Disclosure-safe: the result is stored server-side via
-  \code{base::(newobj, ..., envir = parent.frame())} and never appears in
-  this function's own return value -- only row counts are.
+Drop rows still incomplete after imputation
 }

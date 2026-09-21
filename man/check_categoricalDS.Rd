@@ -2,18 +2,18 @@
 % Please edit documentation in R/check_categoricalDS.R
 \name{check_categoricalDS}
 \alias{check_categoricalDS}
-\title{Check validity of categorical variables}
+\title{Value-set checks for categorical clinical variables}
 \usage{
 check_categoricalDS(df)
 }
 \arguments{
-\item{df}{A data frame containing the categorical variables to be checked.}
+\item{df}{A character string giving the name of the server-side data
+frame to check.}
 }
 \value{
-A character vector with the names of columns containing invalid values.
-  Returns an empty character vector if all checked variables are valid.
+Character vector of column names with values outside their
+  permitted set.
 }
 \description{
-Verify that selected categorical variables in a data frame
-  contain only predefined valid values.
+Value-set checks for categorical clinical variables
 }

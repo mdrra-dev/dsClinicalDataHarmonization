@@ -7,8 +7,9 @@
 check_missing_dataDS(df)
 }
 \arguments{
-\item{df}{A data frame for which the percentage of missing values per column
-is to be calculated.}
+\item{df}{A character string giving the name of the server-side data
+frame for which the percentage of missing values per column is to be
+calculated.}
 }
 \value{
 A named numeric vector where each element represents the percentage

@@ -1,37 +1,14 @@
-#' @title Check validity of numeric variables
-#' @description Verify that selected numeric variables in a data frame
-#'   fall within predefined ranges and satisfy integer constraints where required.
-#'   Also checks the format of the patient identifier (pat_ID), if present.
-#'
-#' @param df A data frame containing the numeric variables to be checked.
-#'
-#' @return A character vector with the names of columns containing invalid values.
-#'   Returns an empty character vector if all checked variables are valid.
+#' @title Range/format checks for numeric clinical variables (core logic)
 #' @export
+.cdh_check_numeric_core <- function(df) {
+  invalid_cols <- character(0)
 
-check_numericDS <- function(df) {
-
-  normalize_missing <- function(x) {
-    x[x == "" & !is.na(x)] <- NA
-    x
-  }
-
-  check_range <- function(x, min = NULL, max = NULL, integer = FALSE, decimals = NULL) {
-    x <- normalize_missing(x)
-    x_num <- suppressWarnings(as.numeric(x))  # se x era character, la converte
-
-    invalid <- rep(FALSE, length(x_num))
-    invalid <- invalid | (!is.na(x) & is.na(x_num))
-
-    if (!is.null(min))
-      invalid <- invalid | (!is.na(x_num) & x_num < min)
-    if (!is.null(max))
-      invalid <- invalid | (!is.na(x_num) & x_num > max)
-    if (integer)
-      invalid <- invalid | (!is.na(x_num) & x_num != round(x_num))
-    if (!is.null(decimals))
-      invalid <- invalid | (!is.na(x_num) & abs(x_num - round(x_num, decimals)) > .Machine$double.eps^0.5)
-    any(invalid)
+  if ("pat_ID" %in% names(df)) {
+    x <- df[["pat_ID"]]
+    x <- x[!is.na(x)]
+    if (length(x) > 0 && !all(grepl("^SE[0-9]+$", as.character(x)))) {
+      invalid_cols <- c(invalid_cols, "pat_ID")
+    }
   }
 
   # NOTE ON month_diagnosis: the harmonization data dictionary specifies a
@@ -76,20 +53,32 @@ check_numericDS <- function(df) {
     DAS2C = list(min = 0)
   )
 
-  invalid_cols <- c()
-  for (col_name in names(range_checks)) {
-    if (col_name %in% names(df)) {
-      params <- range_checks[[col_name]]
-      has_invalid <- do.call(check_range, c(list(x = df[[col_name]]), params))
-      if (has_invalid) invalid_cols <- c(invalid_cols, col_name)
+  for (cn in names(range_checks)) {
+    if (!cn %in% names(df)) next
+    x <- suppressWarnings(as.numeric(df[[cn]]))
+    x <- x[!is.na(x)]
+    if (length(x) == 0) next
+
+    spec <- range_checks[[cn]]
+    ok <- TRUE
+    if (!is.null(spec$min) && any(x < spec$min)) ok <- FALSE
+    if (!is.null(spec$max) && any(x > spec$max)) ok <- FALSE
+    if (isTRUE(spec$integer) && any(x != round(x))) ok <- FALSE
+    if (!is.null(spec$decimals)) {
+      mult <- 10 ^ spec$decimals
+      if (any(round(x * mult) != x * mult)) ok <- FALSE
     }
+    if (!ok) invalid_cols <- c(invalid_cols, cn)
   }
 
-  if ("pat_ID" %in% names(df)) {
-    pid <- normalize_missing(df$pat_ID)
-    invalid_pid <- is.na(pid) | !grepl("^SE[0-9]+$", pid)
-    if (any(invalid_pid)) invalid_cols <- c(invalid_cols, "pat_ID")
-  }
+  invalid_cols
+}
 
-  return(invalid_cols)
+#' @title Range/format checks for numeric clinical variables
+#' @param df A character string giving the name of the server-side data
+#'   frame to check.
+#' @return Character vector of column names failing their range/format check.
+#' @export
+check_numericDS <- function(df) {
+  .cdh_check_numeric_core(df)
 }

@@ -29,4 +29,3 @@ Internal helper used by every function in this package that
   and every DS function below now goes through this single implementation
   instead of repeating (and risking re-diverging) the parsing logic.
 }
-\keyword{internal}

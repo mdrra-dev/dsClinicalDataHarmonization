@@ -4,24 +4,19 @@
 \alias{cast_NADS}
 \title{Cast "NA" strings into type NA}
 \usage{
-cast_NADS(df, newobj = "cast_NA_result")
+cast_NADS(df, newobj)
 }
 \arguments{
-\item{df}{A data frame containing values to be converted.}
+\item{df}{A data frame (already resolved).}
 
-\item{newobj}{Name under which the converted data frame is stored on the
-server (in the calling environment, i.e. the analytic session).}
+\item{newobj}{Name under which the result is stored in the session.}
 }
 \value{
-A list with \code{newobj} (the name just base::assigned) and
-  \code{changed} (logical, whether any "NA" string was replaced).
+\code{list(newobj=, changed=)}.
 }
 \description{
-Converts "NA" strings of a data frame to proper NA values.
-  Follows the package's disclosure-safe pattern: the transformed data
-  frame is stored server-side via \code{base::assign(newobj, ..., envir =
-  parent.frame())} and is NEVER part of this function's own return value
-  -- so even if this function were ever invoked as an aggregate call by
-  mistake, no row-level data crosses the wire. Only a small non-disclosive
-  summary (whether any replacement occurred) is returned.
+Converts "NA" strings to proper NA values. Stores the result
+  under \code{newobj} via \code{base::assign(newobj, ..., envir =
+  parent.frame())} and returns only a small summary -- called via
+  \code{datashield.aggregate}, never \code{datashield.assign.expr}.
 }

@@ -4,38 +4,18 @@
 \alias{fill_missing_dataDS}
 \title{Fill missing values by patient and visit order}
 \usage{
-fill_missing_dataDS(
-  df,
-  pat_id_col,
-  visit_col,
-  value_col,
-  newobj = "fill_missing_data_result"
-)
+fill_missing_dataDS(df, pat_id_col, visit_col, value_col, newobj)
 }
 \arguments{
-\item{df}{A data frame containing at least the patient identifier column,
-the visit time column, and the variable to be filled.}
+\item{df}{A data frame (already resolved).}
 
-\item{pat_id_col}{A character string specifying the name of the
-patient identifier column.}
+\item{pat_id_col, visit_col, value_col}{Patient id / visit-order / value column names.}
 
-\item{visit_col}{A character string specifying the name of the
-visit time column.}
-
-\item{value_col}{A character string specifying the name of the
-column whose missing values should be filled.}
-
-\item{newobj}{Name under which the filled data frame is stored.}
+\item{newobj}{Name under which the result is stored.}
 }
 \value{
-A list with \code{newobj}, \code{n_rows}, and \code{n_filled}
-  (count of previously-missing \code{value_col} cells that received a
-  carried-forward value -- an aggregate count, non-disclosive).
+\code{list(newobj=, n_rows=, n_filled=)}.
 }
 \description{
-For each patient, sorts visits by time from diagnosis and
-  propagates non-missing values of a specified column forward
-  chronologically within the same patient. Disclosure-safe: the filled
-  data frame is stored server-side via \code{base::assign(newobj, ..., envir =
-  parent.frame())} and never appears in this function's own return value.
+Fill missing values by patient and visit order
 }

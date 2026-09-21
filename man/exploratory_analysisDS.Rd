@@ -10,7 +10,8 @@ exploratory_analysisDS(
   categorical_cols = NULL,
   group_col = NULL,
   num_bins = 20,
-  nfilter = 5
+  nfilter = 5,
+  max_categories_shown = 20
 )
 }
 \arguments{
@@ -27,6 +28,10 @@ longitudinal trend plot. \code{NULL} (default): skipped.}
 \item{num_bins}{Number of bins for the numeric histograms. Default 20.}
 
 \item{nfilter}{Minimum count required before any statistic/cell/bin is released.}
+
+\item{max_categories_shown}{Distinct-value threshold above which a
+categorical column's full label:count breakdown is replaced with
+extremes only (no labels) -- see \code{cdh_categorical_summary}. Default 20.}
 }
 \value{
 A list:
@@ -38,8 +43,10 @@ A list:
       column with \code{breaks} (bin edges) and \code{counts} (per-bin
       counts, \code{NA} where a bin's count is below \code{nfilter}).
     \item \code{categorical_summary}: named list, one entry per
-      categorical column, itself a named list of category -> count
-      (counts below \code{nfilter} replaced with \code{NA}).
+      categorical column -- see \code{cdh_categorical_summary} for the
+      \code{"full"} (small, bounded category sets) vs. \code{"extremes"}
+      (high-cardinality/free-text-like columns, no labels ever returned)
+      shape.
     \item \code{correlation}: \code{list(cols=, matrix=)}, a Pearson
       correlation matrix over numeric columns with pairwise-complete
       observations, cells set to \code{NA} where the pairwise complete

@@ -37,21 +37,12 @@
 #' @param m Number of imputations per patient (passed to \code{mice}).
 #' @param maxit Maximum MICE iterations per chain.
 #' @param nfilter Minimum site row count required to proceed at all.
-#' @param newobj Name under which the resulting data frame is stored.
 #'
-#' @return Disclosure-safe: the imputed data frame (one row per patient,
-#'   visit; numeric columns imputed and averaged across the \code{m} draws;
-#'   non-numeric columns taken from the modal imputed value) is stored
-#'   server-side via \code{base::assign(newobj, ..., envir = parent.frame())} and
-#'   never appears in this function's own return value. Returns a list with
-#'   \code{newobj}, \code{n_rows}, \code{n_patients}, and
-#'   \code{n_patients_unimputed} (patients with <2 visits, left as-is).
+#' @return \code{list(newobj=, n_rows=, n_patients=, n_patients_unimputed=)}.
 #' @export
 longitudinal_imputationDS <- function(df, pat_id_col, visit_col,
                                        exclude_cols = NULL, m = 5, maxit = 30,
-                                       nfilter = 5,
-                                       newobj = "longitudinal_imputation_result") {
-
+                                       nfilter = 5, newobj) {
   suppressWarnings(suppressPackageStartupMessages({
     library(dplyr)
     library(mice)
@@ -128,8 +119,9 @@ longitudinal_imputationDS <- function(df, pat_id_col, visit_col,
     )
 
   df_imp <- as.data.frame(df_imp)
+
   base::assign(newobj, df_imp, envir = parent.frame())
 
-  list(newobj = newobj, n_rows = nrow(df_imp),
-       n_patients = length(sub_list), n_patients_unimputed = n_too_small)
+  list(newobj = newobj, n_rows = nrow(df_imp), n_patients = length(sub_list),
+       n_patients_unimputed = n_too_small)
 }

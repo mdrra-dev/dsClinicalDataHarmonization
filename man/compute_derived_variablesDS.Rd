@@ -4,30 +4,23 @@
 \alias{compute_derived_variablesDS}
 \title{Compute derived clinical variables}
 \usage{
-compute_derived_variablesDS(df, newobj = "compute_derived_variables_result")
+compute_derived_variablesDS(df, newobj)
 }
 \arguments{
-\item{df}{A data frame.}
+\item{df}{A data frame (already resolved).}
 
-\item{newobj}{Name under which the resulting data frame is stored.}
+\item{newobj}{Name under which the result is stored.}
 }
 \value{
-A list with \code{newobj} and \code{computed} (character vector of
-  which derived columns were actually added -- column NAMES only).
+\code{list(newobj=, computed=)}.
 }
 \description{
-Derives two composite variables when their source columns are
-  available, and leaves the data frame otherwise untouched -- some sites
-  may not collect ultrasound data at all, and this should not block the
-  rest of the harmonization pipeline.
+Computed only when source columns are available (missing
+  sources = skipped, not an error):
   \itemize{
-    \item \code{USPDGS = USPD + USGS}, computed only if both \code{USPD}
-      and \code{USGS} are present.
-    \item \code{DAS2C = sqrt(SJC28) + 0.6 * log1p(CRP)}, computed only if
-      both \code{SJC28} and \code{CRP} are present.
+    \item \code{USPDGS = USPD + USGS}
+    \item \code{DAS2C = sqrt(SJC28) + 0.6 * log(CRP + 1)}
+    \item \code{CDAI50 = SJC28 + TJC28 + Pain/10 + Ph_global/10}
+    \item \code{SDAI = CRP + CDAI50} (requires CDAI50 to have been computed)
   }
-  Row-wise: if either input is \code{NA} for a given row, the derived
-  value for that row is \code{NA} too. Disclosure-safe: the result is
-  stored server-side via \code{base::assign(newobj, ..., envir = parent.frame())}
-  and never appears in this function's own return value.
 }

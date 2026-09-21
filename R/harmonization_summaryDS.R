@@ -10,6 +10,9 @@
 #'   a numeric summary or a categorical cell count is released. Categorical
 #'   cells below this count are reported as \code{NA} (suppressed), same
 #'   convention as other DataSHIELD packages (e.g. \code{ds.table}).
+#' @param max_categories_shown Distinct-value threshold above which a
+#'   categorical column's full label:count breakdown is replaced with
+#'   extremes only (no labels) -- see \code{cdh_categorical_summary}. Default 20.
 #'
 #' @return A list:
 #'   \itemize{
@@ -19,11 +22,11 @@
 #'       with \code{n, mean, sd, min, q25, median, q75, max} (entry omitted
 #'       entirely if non-missing n < nfilter).
 #'     \item \code{categorical_summary}: named list, one entry per
-#'       non-numeric column, itself a named list of category -> count
-#'       (counts below nfilter replaced with NA).
+#'       non-numeric column -- see \code{cdh_categorical_summary} for the
+#'       \code{"full"} vs. \code{"extremes"} shape.
 #'   }
 #' @export
-harmonization_summaryDS <- function(df, nfilter = 5) {
+harmonization_summaryDS <- function(df, nfilter = 5, max_categories_shown = 20) {
 
   n <- nrow(df)
   if (n < nfilter) stop("site n below disclosure threshold")
@@ -49,11 +52,12 @@ harmonization_summaryDS <- function(df, nfilter = 5) {
   names(numeric_summary) <- numeric_cols
   numeric_summary <- Filter(Negate(is.null), numeric_summary)
 
+  # ---- categorical frequencies (full breakdown only for bounded category
+  # sets; high-cardinality/free-text-like columns get extremes only, no
+  # labels -- see cdh_categorical_summary) --------------------------------
   categorical_cols <- setdiff(names(df), numeric_cols)
   categorical_summary <- lapply(categorical_cols, function(cn) {
-    tab <- table(df[[cn]], useNA = "no")
-    tab[tab < nfilter] <- NA
-    as.list(tab)
+    cdh_categorical_summary(df[[cn]], nfilter = nfilter, max_categories_shown = max_categories_shown)
   })
   names(categorical_summary) <- categorical_cols
 

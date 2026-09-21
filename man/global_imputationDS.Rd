@@ -2,42 +2,22 @@
 % Please edit documentation in R/global_imputationDS.R
 \name{global_imputationDS}
 \alias{global_imputationDS}
-\title{Global imputation of missing data using MICE}
+\title{Global (pooled) MICE imputation}
 \usage{
-global_imputationDS(
-  df,
-  id_col,
-  m = 5,
-  maxit = 30,
-  newobj = "global_imputation_result"
-)
+global_imputationDS(df, id_col, m = 5, maxit = 30, newobj)
 }
 \arguments{
-\item{df}{A data frame containing the variables to be imputed.}
+\item{df}{A data frame (already resolved).}
 
-\item{id_col}{A string specifying the name of the identifier column.
-Excluded from imputation and reattached afterwards.}
+\item{id_col}{Identifier column, excluded from imputation, reattached after.}
 
-\item{m}{Number of imputations to generate (passed to \code{mice}).}
+\item{m, maxit}{MICE parameters.}
 
-\item{maxit}{Maximum number of MICE iterations per imputation chain.}
-
-\item{newobj}{Name under which the imputed data frame is stored.}
+\item{newobj}{Name under which the result is stored.}
 }
 \value{
-A list with \code{newobj}, \code{n_rows}, \code{n_cols}, and
-  \code{method_by_column} (named character vector of MICE methods used
-  per column -- method names only, never data).
+\code{list(newobj=, n_rows=, n_cols=, method_by_column=)}.
 }
 \description{
-Performs a global (pooled, not patient-grouped) imputation
-  of missing values using Multiple Imputation by Chained Equations
-  (MICE): identifies continuous vs. categorical variables, base::assigns
-  appropriate methods (pmm, logreg, polyreg), and returns a single
-  averaged/modal-consensus imputed data frame. Disclosure-safe: the
-  imputed data frame is stored server-side via \code{base::assign(newobj, ...,
-  envir = parent.frame())} and never appears in this function's own
-  return value -- only a small summary (row/column counts and the
-  per-column imputation METHOD names, e.g. "pmm"/"logreg" -- never any
-  data value) is returned.
+Global (pooled) MICE imputation
 }

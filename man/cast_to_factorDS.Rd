@@ -4,23 +4,18 @@
 \alias{cast_to_factorDS}
 \title{Cast specified columns to factor}
 \usage{
-cast_to_factorDS(df, columns, newobj = "cast_to_factor_result")
+cast_to_factorDS(df, columns, newobj)
 }
 \arguments{
-\item{df}{A data frame.}
+\item{df}{A data frame (already resolved).}
 
-\item{columns}{A character vector (or "$"-joined string) of column names
-to convert to factor.}
+\item{columns}{A character vector (or "$"-joined string) of columns.}
 
-\item{newobj}{Name under which the modified data frame is stored.}
+\item{newobj}{Name under which the result is stored.}
 }
 \value{
-A list with \code{newobj} and \code{columns_cast} (the subset of
-  requested columns that were actually present and converted).
+\code{list(newobj=, columns_cast=)}.
 }
 \description{
-Converts one or more columns of a data frame to factor.
-  Disclosure-safe: the modified data frame is stored server-side via
-  \code{base::assign(newobj, ..., envir = parent.frame())} and never appears in
-  this function's own return value.
+Cast specified columns to factor
 }

@@ -2,19 +2,17 @@
 % Please edit documentation in R/check_numericDS.R
 \name{check_numericDS}
 \alias{check_numericDS}
-\title{Check validity of numeric variables}
+\title{Range/format checks for numeric clinical variables}
 \usage{
 check_numericDS(df)
 }
 \arguments{
-\item{df}{A data frame containing the numeric variables to be checked.}
+\item{df}{A character string giving the name of the server-side data
+frame to check.}
 }
 \value{
-A character vector with the names of columns containing invalid values.
-  Returns an empty character vector if all checked variables are valid.
+Character vector of column names failing their range/format check.
 }
 \description{
-Verify that selected numeric variables in a data frame
-  fall within predefined ranges and satisfy integer constraints where required.
-  Also checks the format of the patient identifier (pat_ID), if present.
+Range/format checks for numeric clinical variables
 }
