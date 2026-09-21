@@ -81,28 +81,118 @@ list(newobj = newobj,n_before = n_before,n_after = nrow(df_filtered))
 #' @param newobj Name under which the result is stored.
 #' @return \code{list(newobj=, n_rows=, overlap_columns_kept_from_df1=)}.
 #' @export
-join_dataframesDS <- function(df1, df2, by, join_type = c("inner", "left", "right", "full"), newobj) {
+#' @export
+join_dataframesDS <- function(
+    df1,
+    df2,
+    by,
+    join_type = c("inner", "left", "right", "full"),
+    newobj
+) {
+
   join_type <- match.arg(join_type)
   by_cols <- cdh_split_cols(by)
 
+  if (!is.data.frame(df1))
+    stop("df1 must be a data.frame")
+
+  if (!is.data.frame(df2))
+    stop("df2 must be a data.frame")
+
   missing_keys_1 <- setdiff(by_cols, names(df1))
   missing_keys_2 <- setdiff(by_cols, names(df2))
-  if (length(missing_keys_1) > 0) stop("Key column(s) not found in df1: ", paste(missing_keys_1, collapse = ", "))
-  if (length(missing_keys_2) > 0) stop("Key column(s) not found in df2: ", paste(missing_keys_2, collapse = ", "))
 
-  overlap <- intersect(setdiff(names(df1), by_cols), setdiff(names(df2), by_cols))
-  if (length(overlap) > 0) df2 <- df2[, setdiff(names(df2), overlap), drop = FALSE]
+  if (length(missing_keys_1) > 0) {
+    stop(
+      "Key column(s) not found in df1: ",
+      paste(missing_keys_1, collapse = ", ")
+    )
+  }
+
+  if (length(missing_keys_2) > 0) {
+    stop(
+      "Key column(s) not found in df2: ",
+      paste(missing_keys_2, collapse = ", ")
+    )
+  }
+
+  # Columns occurring in both data frames, excluding join keys.
+  # df1 version will be retained.
+  overlap <- intersect(
+    setdiff(names(df1), by_cols),
+    setdiff(names(df2), by_cols)
+  )
+
+  # Keep only columns from df2 that are NOT already in df1.
+  df2_keep <- setdiff(names(df2), c(by_cols, overlap))
+
+  df2_join <- df2[, c(by_cols, df2_keep), drop = FALSE]
 
   all.x <- join_type %in% c("left", "full")
   all.y <- join_type %in% c("right", "full")
-  merged <- merge(df1, df2, by = by_cols, all.x = all.x, all.y = all.y, suffixes = c("", "_DROP_DUP"))
 
-  dup_cols <- grep("_DROP_DUP$", names(merged), value = TRUE)
-  if (length(dup_cols) > 0) merged <- merged[, setdiff(names(merged), dup_cols), drop = FALSE]
+  merged <- merge(
+    df1,
+    df2_join,
+    by = by_cols,
+    all.x = all.x,
+    all.y = all.y,
+    sort = FALSE
+  )
 
-  base::assign(newobj, merged, envir = parent.frame())
-  list(newobj = newobj, n_rows = nrow(merged), overlap_columns_kept_from_df1 = overlap)
+  # Put columns in a deterministic order:
+  # df1 columns first, followed by new columns from df2.
+  desired_cols <- c(
+    names(df1),
+    setdiff(names(df2_join), by_cols)
+  )
+
+  desired_cols <- desired_cols[
+    desired_cols %in% names(merged)
+  ]
+
+  merged <- merged[, desired_cols, drop = FALSE]
+
+  base::assign(
+    newobj,
+    merged,
+    envir = parent.frame()
+  )
+
+  list(
+    newobj = newobj,
+    n_rows = nrow(merged),
+    n_cols = ncol(merged),
+    overlap_columns_kept_from_df1 = overlap,
+    columns_added_from_df2 = df2_keep
+  )
 }
+# join_dataframesDS <- function(df1, df2, by, join_type = c("inner", "left", "right", "full"), newobj) {
+#   join_type <- match.arg(join_type)
+#   by_cols <- cdh_split_cols(by)
+
+# print("names(df1)")
+# print(names(df1))
+# print("names(df2)")
+# print(names(df2))
+#   missing_keys_1 <- setdiff(by_cols, names(df1))
+#   missing_keys_2 <- setdiff(by_cols, names(df2))
+#   if (length(missing_keys_1) > 0) stop("Key column(s) not found in df1: ", paste(missing_keys_1, collapse = ", "))
+#   if (length(missing_keys_2) > 0) stop("Key column(s) not found in df2: ", paste(missing_keys_2, collapse = ", "))
+
+#   overlap <- intersect(setdiff(names(df1), by_cols), setdiff(names(df2), by_cols))
+#   if (length(overlap) > 0) df2 <- df2[, setdiff(names(df2), overlap), drop = FALSE]
+
+#   all.x <- join_type %in% c("left", "full")
+#   all.y <- join_type %in% c("right", "full")
+#   merged <- merge(df1, df2, by = by_cols, all.x = all.x, all.y = all.y, suffixes = c("", "_DROP_DUP"))
+
+#   dup_cols <- grep("_DROP_DUP$", names(merged), value = TRUE)
+#   if (length(dup_cols) > 0) merged <- merged[, setdiff(names(merged), dup_cols), drop = FALSE]
+
+#   base::assign(newobj, merged, envir = parent.frame())
+#   list(newobj = newobj, n_rows = nrow(merged), overlap_columns_kept_from_df1 = overlap)
+# }
 
 #' @title Set (assign) a column's value, generically
 #' @description Server-side equivalent of \code{df$newname <- value}.
