@@ -7,7 +7,7 @@
 filter_rowsDS(
   df,
   column,
-  operator = c("==", "!=", ">", "<", ">=", "<=", "\%in\%", "is.na", "not.na"),
+  operator = c("eq", "neq", "gt", "lt", "gte", "lte", "in", "is_na", "not_na"),
   value = NULL,
   newobj
 )
@@ -17,7 +17,11 @@ filter_rowsDS(
 
 \item{column}{Character, the column to test.}
 
-\item{value}{Comparison value; ignored for is.na/not.na.}
+\item{operator}{Text operator: \code{"eq"}, \code{"neq"},
+\code{"gt"}, \code{"lt"}, \code{"gte"}, \code{"lte"},
+\code{"in"}, \code{"is_na"}, or \code{"not_na"}.}
+
+\item{value}{Comparison value; ignored for \code{is_na} and \code{not_na}.}
 
 \item{newobj}{Name under which the result is stored.}
 }

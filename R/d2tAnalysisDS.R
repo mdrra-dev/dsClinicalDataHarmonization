@@ -62,8 +62,21 @@ d2t_baseline_tableDS <- function(df, numeric_vars = NULL, categorical_vars = NUL
     df <- df[!duplicated(df[[pat_id_col]]), , drop = FALSE]
   }
 
+  # numeric_vars <- intersect(cdh_split_cols(numeric_vars), names(df))
+  # categorical_vars <- intersect(cdh_split_cols(categorical_vars), names(df))
   numeric_vars <- intersect(cdh_split_cols(numeric_vars), names(df))
-  categorical_vars <- intersect(cdh_split_cols(categorical_vars), names(df))
+categorical_vars <- intersect(cdh_split_cols(categorical_vars), names(df))
+
+bad_numeric <- numeric_vars[
+  !vapply(df[numeric_vars], is.numeric, logical(1))
+]
+
+if (length(bad_numeric) > 0L) {
+  stop(
+    "Variables declared as numeric but not stored as numeric: ",
+    paste(bad_numeric, collapse = ", ")
+  )
+}
 
   numeric_summary <- setNames(
     lapply(numeric_vars, function(v) group_summary_statsDS(df, value_col = v, group_col = group_col, nfilter = nfilter)),

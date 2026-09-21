@@ -13,7 +13,7 @@
 build_survival_tableDS <- function(df, pat_id_col = "pat_ID", event_col = "D2T",
                                     time_col = "Visit_months_from_diagnosis",
                                     entry_time_col = NULL, group_col = NULL,
-                                    covariate_cols = NULL, newobj) {
+                                    covariate_cols = NULL, newobj="surv_S") {
   for (nm in c(pat_id_col, event_col, time_col)) {
     if (!nm %in% names(df)) stop("column '", nm, "' not found in data")
   }

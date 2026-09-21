@@ -12,7 +12,7 @@ build_survival_tableDS(
   entry_time_col = NULL,
   group_col = NULL,
   covariate_cols = NULL,
-  newobj
+  newobj = "surv_S"
 )
 }
 \arguments{
