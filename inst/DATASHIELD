@@ -53,3 +53,5 @@ AggregateMethods:
   set_column_valueDS,
   spearman_multiDS,
   wilcox_binaryDS,
+AssignMethods:
+  new_build_survival_tableDS
