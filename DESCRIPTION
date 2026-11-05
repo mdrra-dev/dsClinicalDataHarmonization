@@ -78,9 +78,8 @@ AggregateMethods:
     select_columnsDS,
     set_column_valueDS,
     spearman_multiDS,
-    wilcox_binaryDS
-AssignMethods:
-  new_build_survival_tableDS
+    wilcox_binaryDS,
+    missforest_imputationDS
 Options: datashield.privacyLevel=5
 Depends: R (>= 3.5)
 Encoding: UTF-8
