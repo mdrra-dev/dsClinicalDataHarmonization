@@ -88,5 +88,6 @@ License: GPL-3
 Imports:
     mice,
     purrr,
-    dplyr
+    dplyr,
+    missForest
 RoxygenNote: 7.3.2
