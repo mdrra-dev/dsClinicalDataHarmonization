@@ -2,66 +2,64 @@
 % Please edit documentation in R/longitudinal_imputationDS.R
 \name{longitudinal_imputationDS}
 \alias{longitudinal_imputationDS}
-\title{Longitudinal (patient-grouped) MICE imputation}
+\title{Longitudinal (patient-grouped) PMM imputation}
 \usage{
 longitudinal_imputationDS(
   df,
   pat_id_col,
   visit_col,
+  include_cols = NULL,
   exclude_cols = NULL,
   m = 5,
   maxit = 30,
+  min_visits = 3,
   nfilter = 5,
   newobj
 )
 }
 \arguments{
-\item{df}{A data frame containing at least \code{pat_id_col} and
-\code{visit_col}.}
+\item{df}{A data frame.}
 
-\item{pat_id_col}{Character. Name of the patient identifier column.}
+\item{pat_id_col}{Patient identifier column.}
 
-\item{visit_col}{Character. Name of the visit-ordering column (e.g.
-\code{Visit} or \code{Visit_months_from_diagnosis}).}
+\item{visit_col}{Visit-ordering column.}
 
-\item{exclude_cols}{Character vector (or "$"-joined string), columns to
-exclude from \code{mice::quickpred}'s predictor matrix (e.g. free-text
-identifiers). \code{pat_id_col} is always excluded automatically.}
+\item{include_cols}{Character vector (or "$"-joined string). Columns to
+impute. NULL = all candidates.}
 
-\item{m}{Number of imputations per patient (passed to \code{mice}).}
+\item{exclude_cols}{Character vector (or "$"-joined string). Columns to leave out.}
 
-\item{maxit}{Maximum MICE iterations per chain.}
+\item{m}{Imputations per patient (capped at 20).}
+
+\item{maxit}{MICE iterations (capped at 50).}
+
+\item{min_visits}{Patients with fewer visits are left unimputed.}
 
 \item{nfilter}{Minimum site row count required to proceed at all.}
 }
 \value{
-\code{list(newobj=, n_rows=, n_patients=, n_patients_unimputed=)}.
+\code{list(newobj, n_rows, n_patients, n_patients_unimputed,
+  n_patients_failed, n_cols_imputed, n_cols_skipped_type,
+  n_cols_skipped_allna, n_missing_before, n_missing_after)}.
 }
 \description{
-The preferred imputation method for this harmonization
-  module: for each patient, orders their visits chronologically and runs
-  predictive mean matching (\code{mice}, method = "pmm") WITHIN that
-  patient's own visit history, then averages across the \code{m} imputed
-  draws per numeric variable. This mirrors a clinically sensible
-  assumption -- that a patient's own trajectory is the best predictor of
-  their missing values -- rather than pooling across unrelated patients.
+For each patient, visits are ordered chronologically and
+  predictive mean matching (\code{mice}, method = "pmm") is run WITHIN that
+  patient's own visit history; the \code{m} draws are averaged per cell.
 
-  This is an adapted, corrected version of the originally supplied
-  \code{impute_missing_data_mice()} sketch:
+  Variable selection:
   \itemize{
-    \item the join key at the end used the literal column \code{Visit}
-      even when the function was called with a different
-      \code{visit_col} (e.g. \code{Protocol_visit}) -- fixed to always use
-      the actual \code{visit_col} argument.
-    \item \code{quickpred(..., exclude = c("sam_ID","Protocol_visit"))}
-      hardcoded two specific column names regardless of what the caller's
-      data actually contained -- replaced with an \code{exclude_cols}
-      argument the caller controls.
-    \item a patient with a single visit (or fewer rows than \code{mice}
-      can meaningfully model) would previously error out the whole call --
-      such patients are now passed through unimputed with a per-site
-      warning rather than crashing the pipeline.
-    \item a disclosure floor (\code{nfilter}) is enforced on site size,
-      consistent with every other function in this package.
+    \item \code{include_cols}: if given, ONLY these columns are imputed and
+      used as predictors. If NULL, all columns are candidates.
+    \item \code{exclude_cols}: removed from the candidate set (applied after
+      \code{include_cols}). \code{pat_id_col} is always removed.
+    \item \code{visit_col} is never imputed; if numeric, it is used as a
+      predictor (time effect), otherwise it is only used for ordering.
   }
+
+  Type guard: only plain numeric columns (integer/double) are imputed.
+  Character, factor, logical, Date/POSIXt and difftime columns pass through
+  unchanged. All-NA columns are skipped. Non-finite values (Inf/NaN) are
+  treated as missing. Only cells that were NA are modified, so every row,
+  column, column order and column type of the input is preserved.
 }
