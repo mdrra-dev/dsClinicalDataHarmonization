@@ -1,3 +1,4 @@
+library(missForest)
 #' @title missForest imputation (random-forest, mixed types, keeps all rows)
 #' @description Fills missing values with simple placeholders (median for
 #'   numerics, mode for categoricals), then iteratively refines them: for each
